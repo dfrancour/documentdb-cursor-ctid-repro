@@ -1,0 +1,69 @@
+# DDB_IMAGE=<local build of documentdb main 7f05115636419fa2500da34a38f96ba355984189 (2026-11-03): upstream packaging/build_packages.sh --os deb13 --pg 17 --no-dbgsym, then docker build -f packaging/gateway/docker/Dockerfile_documentdb_local --build-arg BASE_IMAGE=debian:trixie --build-arg POSTGRES_VERSION=17 --build-arg DEB_PACKAGE_REL_PATH=packaging/deb13-postgresql-17-documentdb_1.3-0_amd64.deb; image id sha256:47ed3bfb0f7c0546f4b47c9a46b8f45251c5c5b05194664886c0cf24541740e0>
+# ./run.sh on a clean start (./run.sh down first), 2026-11-10, docker compose 5.6.0
+mongodb     version	{"version":"9.0.4"}
+documentdb  version	{"version":"7.0.0"}	postgres 17.11 (Debian 17.11-1.pgdg13+2), documentdb extension 1.3-0
+mongodb     dup	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:default-batch	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup	{"expected":20000,"returned":20908,"distinct":20000,"duplicated":908,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  dup:default-batch	{"expected":20000,"returned":20005,"distinct":20000,"duplicated":5,"first_duplicated_ids":[0,25,50,75,100]}
+mongodb     dup:dynamic (no statistics)	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:dynamic (after ANALYZE)	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup:dynamic (no statistics)	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup:dynamic (after ANALYZE)	{"expected":20000,"returned":20864,"distinct":20000,"duplicated":864,"first_duplicated_ids":[0,25,50,75,100,125,150,175,200,225]}
+documentdb  dup-trace	{"first_batch" : 100, "resume_after" : "(3,25)", "behind_cursor" : 72, "ahead_same_page" : 24, "ahead_same_page_ids" : "76..99", "ahead_same_page_ctids" : "(3,26)..(3,49)", "ahead_other_page" : 4, "ahead_other_page_ids" : [0, 25, 50, 75], "ahead_other_page_ctids" : ["(800,1)", "(800,2)", "(800,3)", "(800,4)"]}
+mongodb     loop	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  loop	{"expected":5000,"returned":75994,"distinct":5000,"batches":760,"cursor":"closed"}
+mongodb     dup:analyzed	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     loop:analyzed	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  dup:analyzed	{"expected":20000,"returned":20895,"distinct":20000,"duplicated":895,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  loop:analyzed	{"expected":5000,"returned":75994,"distinct":5000,"batches":760,"cursor":"closed"}
+mongodb     skip:index	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:index	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+mongodb     skip:autovacuum	{"expected":15000,"returned":15000,"distinct":15000,"missing":0,"missing_range":[]}
+documentdb  skip:autovacuum (autovacuum after 15s)	{"expected":15000,"returned":13000,"distinct":13000,"missing":2000,"missing_range":[18000,19999]}
+mongodb     skip:no_index	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:aggregate	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:sort_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:hint_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:blocking_sort	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:range_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:txn	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:snapshot_read	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:no_index	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:aggregate	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+documentdb  skip:sort_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:hint_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:blocking_sort	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:range_id	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:txn	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+documentdb  skip:snapshot_read	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+mongodb     skip:dynamic	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+mongodb     skip:dynamic_hint	{"expected":18000,"returned":18000,"distinct":18000,"missing":0,"missing_range":[]}
+documentdb  skip:dynamic	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+documentdb  skip:dynamic_hint	{"expected":18000,"returned":16000,"distinct":16000,"missing":2000,"missing_range":[18000,19999]}
+
+# Then four more runs each of ./run.sh dup and ./run.sh loop, alternating, on the same servers (no restart)
+mongodb     dup	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:default-batch	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup	{"expected":20000,"returned":20898,"distinct":20000,"duplicated":898,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  dup:default-batch	{"expected":20000,"returned":20005,"distinct":20000,"duplicated":5,"first_duplicated_ids":[0,25,50,75,100]}
+mongodb     loop	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  loop	{"expected":5000,"returned":75994,"distinct":5000,"batches":760,"cursor":"closed"}
+mongodb     dup	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:default-batch	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup	{"expected":20000,"returned":20877,"distinct":20000,"duplicated":877,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  dup:default-batch	{"expected":20000,"returned":20006,"distinct":20000,"duplicated":6,"first_duplicated_ids":[0,25,50,75,99,100]}
+mongodb     loop	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  loop	{"expected":5000,"returned":76000,"distinct":5000,"batches":760,"cursor":"closed"}
+mongodb     dup	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:default-batch	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup	{"expected":20000,"returned":20890,"distinct":20000,"duplicated":890,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  dup:default-batch	{"expected":20000,"returned":20005,"distinct":20000,"duplicated":5,"first_duplicated_ids":[0,25,50,75,100]}
+mongodb     loop	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  loop	{"expected":5000,"returned":75994,"distinct":5000,"batches":760,"cursor":"closed"}
+mongodb     dup	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+mongodb     dup:default-batch	{"expected":20000,"returned":20000,"distinct":20000,"duplicated":0,"first_duplicated_ids":[]}
+documentdb  dup	{"expected":20000,"returned":20896,"distinct":20000,"duplicated":896,"first_duplicated_ids":[76,77,78,79,80,81,82,83,84,85]}
+documentdb  dup:default-batch	{"expected":20000,"returned":20005,"distinct":20000,"duplicated":5,"first_duplicated_ids":[0,25,50,75,100]}
+mongodb     loop	{"expected":5000,"returned":5000,"distinct":5000,"batches":51,"cursor":"closed"}
+documentdb  loop	{"expected":5000,"returned":75994,"distinct":5000,"batches":760,"cursor":"closed"}

@@ -1,0 +1,36 @@
+# DocumentDB 1.0 and MongoDB 9.0.4 side by side, plus a mongosh client.
+# Nothing is published on host ports; everything talks over the compose network.
+name: ctid-repro
+
+services:
+  documentdb:
+    image: ${DDB_IMAGE:-ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0@sha256:4a341daca29b02dabd0d64c357bc9231868b59ef08c8059058b1e5cedbe3899d}
+    environment:
+      USERNAME: repro
+      PASSWORD: repro-local-only
+      DOCUMENTDB_USAGE_TELEMETRY: "false"
+    command: ["--skip-init-data"]
+    healthcheck:            # keep the image's own probe, just poll it faster
+      interval: 3s
+      timeout: 10s
+      start_period: 300s
+      retries: 3
+
+  mongodb:
+    image: ${MONGO_IMAGE:-mongo:9.0.4@sha256:dc28ed5a9d0fc616903c3f463bb1e53b92b49f441721b91926e87d90bf957ce8}
+    command: ["--replSet", "rs0", "--bind_ip_all"]   # single-node replica set, for the transaction case
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval",
+             "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongodb:27017'}]}).ok }"]
+      interval: 3s
+      timeout: 10s
+      start_period: 60s
+      retries: 20
+
+  client:
+    image: ${MONGO_IMAGE:-mongo:9.0.4@sha256:dc28ed5a9d0fc616903c3f463bb1e53b92b49f441721b91926e87d90bf957ce8}
+    profiles: ["client"]
+    entrypoint: ["mongosh", "--quiet"]
+    working_dir: /repro/scripts
+    volumes:
+      - ./scripts:/repro/scripts:ro
