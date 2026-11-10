@@ -1,5 +1,7 @@
 # documentdb-cursor-ctid-repro
 
+Reported upstream as [documentdb/documentdb#822](https://github.com/documentdb/documentdb/issues/822).
+
 ## Summary
 
 On [DocumentDB](https://github.com/documentdb/documentdb), a cursor can skip a matching document,
